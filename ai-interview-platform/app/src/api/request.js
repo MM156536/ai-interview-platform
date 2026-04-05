@@ -48,7 +48,7 @@ const baseUrl = "http://127.0.0.1:4523/m1/7900134-7650835-default";
 export const addQuestion = (data) =>
   request.post(`${baseUrl}/admin/question/add`, data);
 export const batchAddQuestion = (data) =>
-  request.post("/admin/question/addBatch", { question: data });
+  request.post(`${baseUrl}/admin/question/addBatch`, { question: data });
 export const getUnreviewed = () => request.get("/admin/question/search");
 export const getApproved = () => request.get("/admin/question/approved");
 export const batchApprove = (ids) =>

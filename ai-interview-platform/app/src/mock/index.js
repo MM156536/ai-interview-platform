@@ -81,37 +81,28 @@ Mock.mock(`${baseUrl}/admin/question/add`, "post", ({ body }) => {
 });
 
 // 批量新增题目
-Mock.mock(
-  "http://127.0.0.1:4523/m1/7900134-7650835-default/admin/question/addBatch",
-  "post",
-  ({ body }) => {
-    const list = JSON.parse(body).question;
-    if (!Array.isArray(list))
-      return { code: 400, message: "必须传数组", data: null };
+Mock.mock(`${baseUrl}/admin/question/addBatch`, "post", ({ body }) => {
+  const list = JSON.parse(body).question;
+  if (!Array.isArray(list))
+    return { code: 400, message: "必须传数组", data: null };
 
-    const validList = list.filter((item) =>
-      ["questionContent", "jobRole", "referenceAnswer"].every((k) =>
-        item[k]?.trim(),
-      ),
-    );
-    if (!validList.length)
-      return { code: 400, message: "无有效数据", data: null };
+  const validList = list.filter((item) =>
+    ["questionContent", "jobRole", "referenceAnswer"].every((k) =>
+      item[k]?.trim(),
+    ),
+  );
+  if (!validList.length)
+    return { code: 400, message: "无有效数据", data: null };
 
-    const maxId = data.unreviewedList.length
-      ? Math.max(...data.unreviewedList.map((i) => i.id))
-      : 0;
-    const newList = validList.map((item, i) =>
-      createQuestion(item, maxId + i + 1),
-    );
+  const startId = 1; // 可根据你的需求调整起始ID
+  const newList = validList.map((item, i) => createQuestion(item, startId + i));
 
-    data.unreviewedList.push(...newList);
-    return {
-      code: 200,
-      message: `批量添加${newList.length}道题`,
-      data: newList,
-    };
-  },
-);
+  return {
+    code: 200,
+    message: `批量添加${newList.length}道题`,
+    data: newList,
+  };
+});
 
 const resp = (code, msg, data = null) => ({ code, message: msg, data });
 

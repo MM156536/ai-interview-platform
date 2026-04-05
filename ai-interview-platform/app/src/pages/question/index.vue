@@ -343,15 +343,20 @@ const removeBatchForm = (index) => {
   batchForms.value.splice(index, 1);
 };
 
-// 提交逻辑
+// 批量提交逻辑
 const submitBatchForm = async () => {
+  console.log("点击提交了");
+
   const validData = batchForms.value.filter((item) =>
     item.questionContent?.trim(),
   );
   if (!validData.length) return ElMessage.warning("请填写有效题目");
 
+  console.log("🟢 发送给接口的数据: ", validData);
+
   try {
     const res = await batchAddQuestion(validData);
+    console.log("✅ 业务请求成功: ", res);
     ElMessage.success(res.message);
     batchForms.value = [
       {
@@ -366,6 +371,7 @@ const submitBatchForm = async () => {
     ];
     loadAllQuestions();
   } catch (err) {
+    console.log("❌ 请求失败: ", err);
     ElMessage.error(err.message || "批量提交失败");
   }
 };
