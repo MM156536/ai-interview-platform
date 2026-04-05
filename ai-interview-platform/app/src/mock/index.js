@@ -41,32 +41,30 @@ const createQuestion = (item, id) => ({
   source: Number(item.source) || 0,
 });
 
-Mock.mock(
-  "http://127.0.0.1:4523/m1/7900134-7650835-default/admin/question/delete",
-  "post",
-  ({ body }) => {
-    const { id } = JSON.parse(body);
-    // 先从未过审列表删除
-    const unreviewedIndex = data.unreviewedList.findIndex(
-      (item) => item.id === id,
-    );
-    if (unreviewedIndex > -1) {
-      data.unreviewedList.splice(unreviewedIndex, 1);
-      return { code: 200, message: "未过审题目删除成功" };
-    }
-    // 再从已审核/向量化列表删除
-    const approvedIndex = data.approvedList.findIndex((item) => item.id === id);
-    if (approvedIndex > -1) {
-      data.approvedList.splice(approvedIndex, 1);
-      return { code: 200, message: "向量化题目删除成功" };
-    }
-    // 未找到题目
-    return { code: 400, message: "题目不存在或已删除" };
-  },
-);
+const baseUrl = "http://127.0.0.1:4523/m1/7900134-7650835-default";
+
+Mock.mock("/admin/question/delete", "post", ({ body }) => {
+  const { id } = JSON.parse(body);
+  // 先从未过审列表删除
+  const unreviewedIndex = data.unreviewedList.findIndex(
+    (item) => item.id === id,
+  );
+  if (unreviewedIndex > -1) {
+    data.unreviewedList.splice(unreviewedIndex, 1);
+    return { code: 200, message: "未过审题目删除成功" };
+  }
+  // 再从已审核/向量化列表删除
+  const approvedIndex = data.approvedList.findIndex((item) => item.id === id);
+  if (approvedIndex > -1) {
+    data.approvedList.splice(approvedIndex, 1);
+    return { code: 200, message: "向量化题目删除成功" };
+  }
+  // 未找到题目
+  return { code: 400, message: "题目不存在或已删除" };
+});
 
 // 新增题目（无需审核）
-Mock.mock("/admin/question/add", "post", ({ body }) => {
+Mock.mock(`${baseUrl}/admin/question/add`, "post", ({ body }) => {
   // 1. 解析前端传来的 JSON 数据
   const reqData = JSON.parse(body);
 
@@ -162,7 +160,6 @@ Mock.mock(
 );
 
 // ==================== 登录注册相关接口（补上这一段！） ====================
-const baseUrl = "http://127.0.0.1:4523/m1/7900134-7650835-default";
 
 // 1. 管理员登录
 Mock.mock(`${baseUrl}/admin/admin/login`, "post", () => {

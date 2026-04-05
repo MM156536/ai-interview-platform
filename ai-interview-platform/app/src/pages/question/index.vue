@@ -397,8 +397,7 @@ const rules = {
 // 单题提交
 const handleSubmit = async () => {
   console.log("点击提交了");
-
-  // 先做表单校验
+  // 表单校验
   try {
     await formRef.value.validate();
   } catch (err) {
@@ -413,20 +412,19 @@ const handleSubmit = async () => {
       typeof v === "string" ? v.trim() : v,
     ]),
   );
-
-  console.log("🟢 发送给接口的数据：", submitData); // 看这里有没有输入的值
+  console.log("🟢 发送给接口的数据: ", submitData);
 
   try {
-    // 发起请求
+    // 发起请求：只有 code=200 才会走到这里
     const res = await addQuestion(submitData);
-    console.log("🟢 Mock 返回成功：", res);
-
+    console.log("✅ 业务请求成功: ", res);
     ElMessage.success("提交成功");
     handleReset();
     loadAllQuestions();
     activeTab.value = "unreviewed";
   } catch (err) {
-    console.log("请求出错：", err);
+    // 网络错误 / code≠200 都会走到这里
+    console.log("❌ 请求失败: ", err);
     ElMessage.error("提交失败");
   }
 };
