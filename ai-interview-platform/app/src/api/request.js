@@ -49,13 +49,17 @@ export const addQuestion = (data) =>
   request.post(`${baseUrl}/admin/question/add`, data);
 export const batchAddQuestion = (data) =>
   request.post(`${baseUrl}/admin/question/addBatch`, { question: data });
-export const getUnreviewed = () => request.get("/admin/question/search");
-export const getApproved = () => request.get("/admin/question/approved");
+export const getUnreviewed = () =>
+  request.get(`${baseUrl}/admin/question/search`);
+export const getApproved = () => request.get(`${baseUrl}/admin/question/vec`);
 export const batchApprove = (ids) =>
-  request.post("/admin/question/audit", { ids: ids.filter((id) => id) });
-export const vectorImport = () => request.post("/admin/question/vector");
+  request.post(`${baseUrl}/admin/question/audit`, {
+    ids: ids.filter((id) => id),
+  });
+export const vectorImport = () =>
+  request.post(`${baseUrl}/admin/question/vector`);
 export const deleteQuestion = (id) =>
-  request.post("/admin/question/delete", { id });
+  request.post(`${baseUrl}/admin/question/delete`, { id });
 
 // 面试记录相关接口
 export const getHistoryInterviewList = () =>

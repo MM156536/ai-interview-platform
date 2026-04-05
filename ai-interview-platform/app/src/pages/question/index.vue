@@ -453,45 +453,90 @@ const handleReset = () => {
 const loadUnreviewed = async () => {
   loading.value = true;
   try {
-    unreviewedList.value = (await getUnreviewed()).data || [];
+    console.log("📤 正在请求：未审核题目列表...");
+
+    const res = await getUnreviewed();
+
+    if (res.code === 200) {
+      console.log("✅ 请求成功！未审核题目数据：", res.data);
+      unreviewedList.value = res.data || [];
+      // 额外判断：有没有题目
+      if (res.data && res.data.length > 0) {
+        console.log(`📋 共加载到 ${res.data.length} 道未审核题目`);
+      } else {
+        console.log(" 暂无未审核题目");
+      }
+    } else {
+      console.log("⚠️ 请求返回异常：", res?.message || "接口异常");
+    }
+  } catch (err) {
+    // ========== 请求失败（网络/接口报错） ==========
+    console.error("❌ 请求失败！未审核题目接口异常：", err);
   } finally {
     loading.value = false;
   }
 };
+
 const loadApproved = async () => {
   loading.value = true;
   try {
-    approvedList.value = (await getApproved()).data || [];
+    console.log("📤 正在请求：已审核题目列表");
+    const res = await getApproved();
+
+    if (res.code === 200) {
+      console.log("✅ 已审核题目请求成功：", res.data);
+      approvedList.value = res.data || [];
+
+      if (res.data?.length) {
+        console.log(`📋 共加载 ${res.data.length} 道已审核题目`);
+      } else {
+        console.log("ℹ️ 暂无已审核题目");
+      }
+    } else {
+      console.log("⚠️ 已审核接口返回异常：", res?.message || "接口异常");
+    }
+  } catch (err) {
+    console.error("❌ 已审核题目请求失败：", err);
   } finally {
     loading.value = false;
   }
 };
-const loadAllQuestions = async () =>
+
+const loadAllQuestions = async () => {
+  console.log("🔄 正在刷新所有题目列表...");
   await Promise.all([loadUnreviewed(), loadApproved()]);
+  console.log("✅ 所有列表刷新完成");
+};
 
 // 审核/向量化
 const handleBatchApprove = async () => {
-  if (!unreviewedList.value.length) return ElMessage.warning("无未过审题目");
-  try {
-    await batchApprove(unreviewedList.value.map((i) => i.id));
-    ElMessage.success("批量通过成功");
-    loadAllQuestions();
-  } catch (err) {
-    ElMessage.error("批量审核失败");
+  if (unreviewedList.value.length === 0) {
+    ElMessage.warning("无未审核题目");
+    return;
   }
-};
-const handleVector = async () => {
+
+  // 取出所有未审核题目的 ID
+  const ids = unreviewedList.value.map((item) => item.id);
+  console.log("📤 即将审核通过的题目ID：", ids);
+
   try {
-    await vectorImport();
-    ElMessage.success("向量化成功");
-    loadAllQuestions();
+    // 调用后端审核接口（真正修改状态）
+    await batchApprove(ids);
+
+    console.log("✅ 批量审核成功");
+    ElMessage.success("批量审核成功");
+
+    // ✅ 核心：刷新列表 → 未审核清空，已审核增加
+    await loadAllQuestions();
   } catch (err) {
-    ElMessage.error("向量化失败");
+    console.error("❌ 批量审核失败：", err);
+    ElMessage.error("批量审核失败，请重试");
   }
 };
 
 //删除题目
 const handleDelete = async (id, type) => {
+  console.log(`📤 准备删除：ID=${id}，类型=${type}`);
   // 弹出确认框
   try {
     await ElMessageBox.confirm(
@@ -506,13 +551,17 @@ const handleDelete = async (id, type) => {
     // 调用删除接口
     loading.value = true;
     const res = await deleteQuestion(id);
+    console.log("✅ 删除成功：", res);
     ElMessage.success(res.message);
     // 刷新列表
     loadAllQuestions();
   } catch (err) {
     // 取消删除或删除失败
     if (err !== "cancel") {
+      console.error("❌ 删除失败：", err);
       ElMessage.error(err.message || "删除失败");
+    } else {
+      console.log("ℹ️ 用户取消删除");
     }
   } finally {
     loading.value = false;
