@@ -4,30 +4,33 @@ import Mock from "mockjs";
 Mock.setup({ timeout: "200-600" });
 
 // 统一存储数据
-const data = {
-  unreviewedList: Mock.mock({
-    "list|3-5": [
-      {
-        "id|+1": 1,
-        questionContent: "@csentence(10,20)",
-        difficultyLevel: "@integer(1,3)",
-        jobRole: "@cword(4,8)",
-        status: 0,
-        referenceAnswer: "@csentence(5,15)",
-        evaluationCriteria: "@csentence(8,20)",
-        tags: "@cword(4,10)",
-        source: "@integer(0,1)",
-        type: "@pick(['single', 'multiple', 'short'])",
-        createTime: "@datetime",
-        vectorStatus: 0,
-        updateTime: "@datetime",
-        isDeleted: 0,
-        like: 0,
-      },
-    ],
-  }).list,
+const data = Mock.mock({
+  unreviewedList: [
+    {
+      id: 1,
+      difficultyLevel: "1",
+      questionContent: "请简述Vue3响应式原理",
+      jobRole: "前端开发",
+      referenceAnswer: "Proxy 实现...",
+      evaluationCriteria: "能清晰解释概念，举例说明。",
+      tags: "Spring,设计模式",
+      status: 0,
+      createTime: "@datetime",
+    },
+    {
+      id: 2,
+      difficultyLevel: "1",
+      questionContent: "MySQL索引优化",
+      jobRole: "后端开发",
+      referenceAnswer: "避免索引失效...",
+      evaluationCriteria: "能清晰解释概念，举例说明。",
+      tags: "Spring,设计模式",
+      status: 0,
+      createTime: "@datetime",
+    },
+  ],
   approvedList: [],
-};
+});
 
 // 工具函数：生成新题目
 const createQuestion = (item, id) => ({
@@ -45,22 +48,9 @@ const baseUrl = "http://127.0.0.1:4523/m1/7900134-7650835-default";
 
 Mock.mock(`${baseUrl}/admin/question/delete`, "post", ({ body }) => {
   const { id } = JSON.parse(body);
-  // 先从未过审列表删除
-  const unreviewedIndex = data.unreviewedList.findIndex(
-    (item) => item.id === id,
-  );
-  if (unreviewedIndex > -1) {
-    data.unreviewedList.splice(unreviewedIndex, 1);
-    return { code: 200, message: "未过审题目删除成功" };
-  }
-  // 再从已审核/向量化列表删除
-  const approvedIndex = data.approvedList.findIndex((item) => item.id === id);
-  if (approvedIndex > -1) {
-    data.approvedList.splice(approvedIndex, 1);
-    return { code: 200, message: "向量化题目删除成功" };
-  }
-  // 未找到题目
-  return { code: 400, message: "题目不存在或已删除" };
+  data.unreviewedList = data.unreviewedList.filter((item) => item.id !== id);
+  data.approvedList = data.approvedList.filter((item) => item.id !== id);
+  return { code: 200, message: "删除成功", data: null };
 });
 
 // 新增题目（无需审核）
@@ -108,63 +98,38 @@ Mock.mock(`${baseUrl}/admin/question/addBatch`, "post", ({ body }) => {
   };
 });
 
-const resp = (code, msg, data = null) => ({ code, message: msg, data });
-
 // 查看未过审题目
 Mock.mock(`${baseUrl}/admin/question/search`, "get", () => {
-  const mockUnreviewedList = [
-    {
-      id: 101,
-      difficultyLevel: "1",
-      questionContent: "请简述Vue3响应式原理",
-      jobRole: "前端开发",
-      referenceAnswer: "Vue3使用Proxy实现...",
-      evaluationCriteria: "能清晰解释概念，举例说明。",
-      tags: "Spring,设计模式",
-      status: "待审核", // 未过审状态
-      createTime: "2026-04-05 12:00:00",
-    },
-    {
-      id: 102,
-      difficultyLevel: "2",
-      questionContent: "MySQL索引优化有哪些?",
-      jobRole: "后端开发",
-      referenceAnswer: "避免索引失效、联合索引...",
-      evaluationCriteria: "能清晰解释概念，举例说明。",
-      tags: "Spring,设计模式",
-      status: "待审核",
-      createTime: "2026-04-05 12:10:00",
-    },
-  ];
-
   return {
     code: 200,
     message: "获取未过审题目成功",
-    data: mockUnreviewedList, // 直接返回模拟列表
+    data: data.unreviewedList, // 直接返回模拟列表
   };
 });
 
 // 批量通过审核
 Mock.mock(`${baseUrl}/admin/question/audit`, "post", ({ body }) => {
   const { ids } = JSON.parse(body);
-  const passList = data.unreviewedList.filter((i) => ids.includes(i.id));
-  data.approvedList.push(...passList.map((i) => ({ ...i, status: 1 })));
-  data.unreviewedList = data.unreviewedList.filter((i) => !ids.includes(i.id));
-  return resp(200, "批量通过成功");
+  const moveItems = data.unreviewedList.filter((item) => ids.includes(item.id));
+  data.unreviewedList = data.unreviewedList.filter(
+    (item) => !ids.includes(item.id),
+  );
+  data.approvedList.push(...moveItems);
+  return { code: 200, message: "审核成功", data: null };
 });
 
 // 获取已过审题目
-Mock.mock(`${baseUrl}/admin/question/vec`, "get", () =>
-  resp(200, "success", data.approvedList),
-);
+Mock.mock(`${baseUrl}/admin/question/vec`, "get", () => {
+  return { code: 200, message: "成功", data: data.approvedList };
+});
 
 // 向量化导入
 Mock.mock(`${baseUrl}/admin/question/vector`, "post", () => {
-  data.approvedList = data.approvedList.map((item) => ({
-    ...item,
-    vectorStatus: 1,
-  }));
-  return resp(200, "向量化导入成功");
+  console.log("✅ 向量化完成 → 清空所有题目");
+
+  data.approvedList = [];
+
+  return { code: 200, message: "向量化成功", data: null };
 });
 
 // ==================== 登录注册相关接口（补上这一段！） ====================
