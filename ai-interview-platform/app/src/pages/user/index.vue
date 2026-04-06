@@ -199,16 +199,16 @@
                   scope.row.status === 1
                     ? 'success'
                     : scope.row.status === 2
-                      ? 'warning'
-                      : 'danger'
+                    ? 'warning'
+                    : 'danger'
                 "
               >
                 {{
                   scope.row.status === 1
                     ? "已完成"
                     : scope.row.status === 2
-                      ? "进行中"
-                      : "已取消"
+                    ? "进行中"
+                    : "已取消"
                 }}
               </el-tag>
             </template>
@@ -487,8 +487,8 @@
               currentDetail.status === 1
                 ? "已完成"
                 : currentDetail.status === 2
-                  ? "进行中"
-                  : "已取消"
+                ? "进行中"
+                : "已取消"
             }}
           </p>
           <p><strong>正确率：</strong>{{ currentDetail.accuracy }}%</p>
@@ -614,9 +614,17 @@ const loadData = async (api, key, params) => {
   loading.value = true;
   try {
     const res = await api(params);
-    dataList.value[key] =
-      res.data?.records || (Array.isArray(res.data) ? res.data : []);
+    // 判断请求是否成功（根据后端返回格式，假设code=200为成功）
+    if (res.code === 200) {
+      console.log(`【${api.name || key}】接口请求成功，返回数据：`, res);
+      dataList.value[key] =
+        res.data?.records || (Array.isArray(res.data) ? res.data : []);
+    } else {
+      console.error(`【${api.name || key}】接口请求失败，返回信息：`, res);
+      ElMessage.error("加载失败");
+    }
   } catch (err) {
+    console.error(`【${api.name || key}】接口请求异常：`, err);
     ElMessage.error("加载失败");
   } finally {
     loading.value = false;
@@ -628,9 +636,16 @@ const loadAbilityData = async () => {
   loading.value = true;
   try {
     const res = await getAbilityData();
-    if (res?.data) abilityData.value = res.data;
-    updateAbilityTable();
-  } catch {
+    if (res?.data) {
+      console.log("【getAbilityData】接口请求成功，返回数据：", res);
+      abilityData.value = res.data;
+      updateAbilityTable();
+    } else {
+      console.error("【getAbilityData】接口请求失败，返回信息：", res);
+      ElMessage.warning("使用默认能力数据");
+    }
+  } catch (err) {
+    console.error("【getAbilityData】接口请求异常：", err);
     ElMessage.warning("使用默认能力数据");
   } finally {
     loading.value = false;
@@ -696,8 +711,15 @@ const renderAbilityChart = () => {
 const loadJobRoleList = async () => {
   try {
     const res = await getJobRoleList();
-    jobRoleList.value = res.data || [];
-  } catch {
+    if (res.data) {
+      console.log("【getJobRoleList】接口请求成功，返回数据：", res);
+      jobRoleList.value = res.data || [];
+    } else {
+      console.error("【getJobRoleList】接口请求失败，返回信息：", res);
+      ElMessage.error("岗位加载失败");
+    }
+  } catch (err) {
+    console.error("【getJobRoleList】接口请求异常：", err);
     ElMessage.error("岗位加载失败");
   }
 };
@@ -719,15 +741,35 @@ const submitInterviewForm = async () => {
     await interviewFormRef.value.validate();
     const data = { title: interviewForm.title, content: interviewForm.content };
     if (isEdit.value) data.id = interviewForm.id;
+
     const res = isEdit.value
       ? await updateInterview(data)
       : await addInterview(data);
+
     if (res.code === 200) {
+      console.log(
+        `【${
+          isEdit.value ? "updateInterview" : "addInterview"
+        }】接口请求成功，返回数据：`,
+        res,
+      );
       ElMessage.success("操作成功");
       showAddInterview.value = false;
       loadData(getInterviewList, "interview");
+    } else {
+      console.error(
+        `【${
+          isEdit.value ? "updateInterview" : "addInterview"
+        }】接口请求失败，返回信息：`,
+        res,
+      );
+      ElMessage.error("提交失败");
     }
-  } catch {
+  } catch (err) {
+    console.error(
+      `【${isEdit.value ? "updateInterview" : "addInterview"}】接口请求异常：`,
+      err,
+    );
     ElMessage.error("提交失败");
   }
 };
@@ -736,10 +778,17 @@ const submitInterviewForm = async () => {
 const handleDeleteInterview = async (id) => {
   try {
     await ElMessageBox.confirm("确定删除？");
-    await deleteInterview(id);
-    ElMessage.success("删除成功");
-    loadData(getInterviewList, "interview");
-  } catch {
+    const res = await deleteInterview(id);
+    if (res.code === 200) {
+      console.log("【deleteInterview】接口请求成功，返回数据：", res);
+      ElMessage.success("删除成功");
+      loadData(getInterviewList, "interview");
+    } else {
+      console.error("【deleteInterview】接口请求失败，返回信息：", res);
+      ElMessage.error("删除失败");
+    }
+  } catch (err) {
+    console.error("【deleteInterview】接口请求异常：", err);
     ElMessage.error("删除失败");
   }
 };
@@ -750,8 +799,17 @@ const handleFormPolish = async () => {
   polishFormLoading.value = true;
   try {
     const res = await polishInterview({ content: interviewForm.content });
-    interviewForm.content = res.data?.polishContent || interviewForm.content;
-    ElMessage.success("润色完成");
+    if (res.data?.polishContent) {
+      console.log("【polishInterview】接口请求成功，返回数据：", res);
+      interviewForm.content = res.data.polishContent;
+      ElMessage.success("润色完成");
+    } else {
+      console.error("【polishInterview】接口请求失败，返回信息：", res);
+      ElMessage.warning("润色失败，使用原内容");
+    }
+  } catch (err) {
+    console.error("【polishInterview】接口请求异常：", err);
+    ElMessage.error("润色失败");
   } finally {
     polishFormLoading.value = false;
   }
@@ -778,12 +836,18 @@ const submitUserInfo = async () => {
       avatar: userInfo.avatar,
     };
     if (userInfo.password) data.password = userInfo.password;
+
     const res = await updateUserInfo(data);
     if (res.code === 200) {
+      console.log("【updateUserInfo】接口请求成功，返回数据：", res);
       ElMessage.success("保存成功");
       showUpdateInfo.value = false;
+    } else {
+      console.error("【updateUserInfo】接口请求失败，返回信息：", res);
+      ElMessage.error("保存失败");
     }
-  } catch {
+  } catch (err) {
+    console.error("【updateUserInfo】接口请求异常：", err);
     ElMessage.error("保存失败");
   }
 };
@@ -826,21 +890,33 @@ const handleTabChange = (tab) => {
 };
 
 const initLoad = async () => {
-  await Promise.all([
-    loadData(getHistoryInterviewList, "historyInterview"),
-    loadData(getInterviewList, "interview"),
-    loadData(getAnswerList, "answer"),
-    loadData(getCollectList, "collect"),
-    loadAbilityData(),
-  ]);
+  try {
+    await Promise.all([
+      loadData(getHistoryInterviewList, "historyInterview"),
+      loadData(getInterviewList, "interview"),
+      loadData(getAnswerList, "answer"),
+      loadData(getCollectList, "collect"),
+      loadAbilityData(),
+    ]);
+    console.log("所有核心接口初始化加载完成");
+  } catch (err) {
+    console.error("初始化加载核心接口异常：", err);
+  }
 };
 
 // 加载标签
 const loadTagList = async () => {
   try {
     const res = await getTagList();
-    tagList.value = res.data || [];
-  } catch (e) {
+    if (res.data) {
+      console.log("【getTagList】接口请求成功，返回数据：", res);
+      tagList.value = res.data || [];
+    } else {
+      console.error("【getTagList】接口请求失败，返回信息：", res);
+      ElMessage.error("标签加载失败");
+    }
+  } catch (err) {
+    console.error("【getTagList】接口请求异常：", err);
     ElMessage.error("标签加载失败");
   }
 };
@@ -858,19 +934,24 @@ const questionList = ref([]);
 const loadQuestionList = async () => {
   loading.value = true;
   try {
-    const res = await getQuestionList({
+    const params = {
       keyword: searchKeyword.value,
       tag: searchTag.value,
       jobRole: searchJob.value,
       pageNum: pageNum.value,
       pageSize: pageSize.value,
-    });
+    };
+    const res = await getQuestionList(params);
     if (res.code === 200) {
+      console.log("【getQuestionList】接口请求成功，返回数据：", res);
       questionList.value = res.data.records;
       total.value = res.data.total;
+    } else {
+      console.error("【getQuestionList】接口请求失败，返回信息：", res);
+      ElMessage.error("加载失败");
     }
   } catch (error) {
-    console.error("加载题目列表失败：", error);
+    console.error("【getQuestionList】接口请求异常：", error);
     ElMessage.error("加载失败");
   } finally {
     loading.value = false;

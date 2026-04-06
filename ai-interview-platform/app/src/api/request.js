@@ -1,6 +1,5 @@
 import axios from "axios";
 import { ElMessage } from "element-plus";
-import router from "@/router";
 
 // 创建 axios 实例
 const request = axios.create({
@@ -43,23 +42,18 @@ request.interceptors.response.use(
   },
 );
 
-const baseUrl = "http://127.0.0.1:4523/m1/7900134-7650835-default";
-
-export const addQuestion = (data) =>
-  request.post(`${baseUrl}/admin/question/add`, data);
+export const addQuestion = (data) => request.post(`/admin/question/add`, data);
 export const batchAddQuestion = (data) =>
-  request.post(`${baseUrl}/admin/question/addBatch`, { question: data });
-export const getUnreviewed = () =>
-  request.get(`${baseUrl}/admin/question/search`);
-export const getApproved = () => request.get(`${baseUrl}/admin/question/vec`);
+  request.post(`/admin/question/addBatch`, { question: data });
+export const getUnreviewed = () => request.get(`/admin/question/search`);
+export const getApproved = () => request.get(`/admin/question/vec`);
 export const batchApprove = (ids) =>
-  request.post(`${baseUrl}/admin/question/audit`, {
+  request.post(`/admin/question/audit`, {
     ids: ids.filter((id) => id),
   });
-export const vectorImport = () =>
-  request.post(`${baseUrl}/admin/question/vector`);
+export const vectorImport = () => request.post(`/admin/question/vector`);
 export const deleteQuestion = (id) =>
-  request.post(`${baseUrl}/admin/question/delete`, { id });
+  request.post(`/admin/question/delete`, { id });
 
 // 面试记录相关接口
 export const getHistoryInterviewList = () =>
