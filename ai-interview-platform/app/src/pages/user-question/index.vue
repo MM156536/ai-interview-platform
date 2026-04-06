@@ -5,7 +5,9 @@
       <div class="logo">AI面试平台</div>
       <div class="nav-links">
         <router-link to="/user-home" class="nav-link">首页</router-link>
-        <router-link to="/interview-prepare" class="nav-link">面试准备</router-link>
+        <router-link to="/interview-prepare" class="nav-link"
+          >面试准备</router-link
+        >
         <router-link to="/aicoach" class="nav-link">ai教练</router-link>
         <router-link to="/user-question" class="nav-link">题目库</router-link>
         <router-link to="/user" class="nav-link">用户</router-link>
@@ -24,15 +26,15 @@
 
       <!-- 标签切换 -->
       <div class="tab-header">
-        <div 
-          class="tab-item" 
+        <div
+          class="tab-item"
           :class="{ active: activeTab === 'knowledge' }"
           @click="activeTab = 'knowledge'"
         >
           📚 面试知识点
         </div>
-        <div 
-          class="tab-item" 
+        <div
+          class="tab-item"
           :class="{ active: activeTab === 'flashcard' }"
           @click="activeTab = 'flashcard'"
         >
@@ -215,19 +217,19 @@
                     scope.row.difficultyLevel === 1
                       ? 'success'
                       : scope.row.difficultyLevel === 2
-                        ? 'warning'
-                        : 'danger'
+                      ? 'warning'
+                      : 'danger'
                   "
                   size="small"
                 >
-                  {{ 
+                  {{
                     scope.row.difficultyLevel === 1
                       ? "简单"
                       : scope.row.difficultyLevel === 2
-                        ? "中等"
-                        : scope.row.difficultyLevel === 3
-                          ? "困难"
-                          : "未知"
+                      ? "中等"
+                      : scope.row.difficultyLevel === 3
+                      ? "困难"
+                      : "未知"
                   }}
                 </el-tag>
               </template>
@@ -337,19 +339,19 @@
                   currentQuestionDetail.difficultyLevel === 1
                     ? 'success'
                     : currentQuestionDetail.difficultyLevel === 2
-                      ? 'warning'
-                      : 'danger'
+                    ? 'warning'
+                    : 'danger'
                 "
                 size="small"
               >
-                {{ 
+                {{
                   currentQuestionDetail.difficultyLevel === 1
                     ? "简单"
                     : currentQuestionDetail.difficultyLevel === 2
-                      ? "中等"
-                      : currentQuestionDetail.difficultyLevel === 3
-                        ? "困难"
-                        : "暂无数据"
+                    ? "中等"
+                    : currentQuestionDetail.difficultyLevel === 3
+                    ? "困难"
+                    : "暂无数据"
                 }}
               </el-tag>
             </el-descriptions-item>
@@ -396,12 +398,12 @@
                 :type="currentQuestionDetail.source === 0 ? 'primary' : 'info'"
                 size="small"
               >
-                {{ 
+                {{
                   currentQuestionDetail.source === 0
                     ? "公共题目"
                     : currentQuestionDetail.source === 1
-                      ? "企业专用题库"
-                      : "暂无数据"
+                    ? "企业专用题库"
+                    : "暂无数据"
                 }}
               </el-tag>
             </el-descriptions-item>
@@ -419,7 +421,9 @@
               <span class="count">{{ currentQuestionDetail.like || 0 }}</span>
             </el-descriptions-item>
             <el-descriptions-item label="收藏数" span="3">
-              <span class="count">{{ currentQuestionDetail.collect || 0 }}</span>
+              <span class="count">{{
+                currentQuestionDetail.collect || 0
+              }}</span>
             </el-descriptions-item>
           </el-descriptions>
 
@@ -445,14 +449,14 @@
             />
             <el-table-column label="难度等级" width="100">
               <template #default="scope">
-                {{ 
+                {{
                   scope.row.difficultyLevel === 1
                     ? "简单"
                     : scope.row.difficultyLevel === 2
-                      ? "中等"
-                      : scope.row.difficultyLevel === 3
-                        ? "困难"
-                        : "未知"
+                    ? "中等"
+                    : scope.row.difficultyLevel === 3
+                    ? "困难"
+                    : "未知"
                 }}
               </template>
             </el-table-column>
@@ -466,15 +470,15 @@
       <div v-else class="flashcard-content">
         <!-- 子标签切换：创建 / 做题 -->
         <div class="sub-tabs">
-          <button 
-            class="sub-tab" 
+          <button
+            class="sub-tab"
             :class="{ active: currentMode === 'create' }"
             @click="currentMode = 'create'"
           >
             ✍️ 创建速记卡
           </button>
-          <button 
-            class="sub-tab" 
+          <button
+            class="sub-tab"
             :class="{ active: currentMode === 'practice' }"
             @click="currentMode = 'practice'"
           >
@@ -483,288 +487,325 @@
         </div>
 
         <!-- 创建速记卡组件 -->
-        <CreateCard v-if="currentMode === 'create'" @card-created="handleCardCreated" />
+        <CreateCard
+          v-if="currentMode === 'create'"
+          @card-created="handleCardCreated"
+        />
 
         <!-- 做题组件 -->
-        <PracticeCard v-else ref="practiceRef" :list="cardList" @practice-complete="handlePracticeComplete" />
+        <PracticeCard
+          v-else
+          ref="practiceRef"
+          :list="cardList"
+          @practice-complete="handlePracticeComplete"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import CreateCard from './CreateCard.vue'
-import PracticeCard from './PracticeCard.vue'
-import { getCardList } from '@/api/flashcard'
+import { ref, computed, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { ElMessage } from "element-plus";
+import CreateCard from "./CreateCard.vue";
+import PracticeCard from "./PracticeCard.vue";
+import { getCardList } from "@/api/flashcard";
+import {
+  getTagList,
+  getJobRoleList,
+  getQuestionList,
+  addQuestion,
+  getSimilarQuestion,
+  collectQuestion,
+  likeQuestion,
+} from "../../api/request";
 
 export default {
-  name: 'QuestionPage',
+  name: "QuestionPage",
   components: {
     CreateCard,
-    PracticeCard
+    PracticeCard,
   },
   setup() {
-    const router = useRouter()
-    const route = useRoute()
-    
-    const activeTab = ref('flashcard')
-    const currentMode = ref('create')
-    const cardList = ref([])
-    const practiceRef = ref(null)
-    const searchKeyword = ref('')
-    
+    const router = useRouter();
+    const route = useRoute();
+
+    const activeTab = ref("flashcard");
+    const currentMode = ref("create");
+    const cardList = ref([]);
+    const practiceRef = ref(null);
+    const searchKeyword = ref("");
+
     // 面试知识点相关状态
-    const searchTag = ref('')
-    const searchJob = ref('')
-    const pageNum = ref(1)
-    const pageSize = ref(10)
-    const total = ref(0)
-    const loading = ref(false)
-    const addLoading = ref(false)
-    const questionList = ref([])
-    const questionFormRef = ref(null)
-    const detailDialogVisible = ref(false)
-    const similarDialogVisible = ref(false)
-    const currentQuestionDetail = ref({})
-    const similarQuestionList = ref([])
-    
+    const searchTag = ref("");
+    const searchJob = ref("");
+    const pageNum = ref(1);
+    const pageSize = ref(10);
+    const total = ref(0);
+    const loading = ref(false);
+    const addLoading = ref(false);
+    const questionList = ref([]);
+    const questionFormRef = ref(null);
+    const detailDialogVisible = ref(false);
+    const similarDialogVisible = ref(false);
+    const currentQuestionDetail = ref({});
+    const similarQuestionList = ref([]);
+
+    const jobRoleList = ref([]);
+    const tagOptions = ref([]);
+
     // 提交题目表单
     const questionForm = ref({
-      questionContent: '',
-      referenceAnswer: '',
-      evaluationCriteria: '',
-      difficultyLevel: '',
-      jobRole: '',
+      questionContent: "",
+      referenceAnswer: "",
+      evaluationCriteria: "",
+      difficultyLevel: "",
+      jobRole: "",
       tags: [],
-      source: '0',
-    })
-    
+      source: "0",
+    });
+
     // 表单校验规则
     const questionRules = ref({
       questionContent: [
-        { required: true, message: '请输入题目内容', trigger: 'blur' },
+        { required: true, message: "请输入题目内容", trigger: "blur" },
       ],
       referenceAnswer: [
-        { required: true, message: '请输入参考答案', trigger: 'blur' },
+        { required: true, message: "请输入参考答案", trigger: "blur" },
       ],
       difficultyLevel: [
-        { required: true, message: '请选择难度等级', trigger: 'change' },
+        { required: true, message: "请选择难度等级", trigger: "change" },
       ],
-      jobRole: [{ required: true, message: '请选择适用岗位', trigger: 'change' }],
-      tags: [{ required: true, message: '请选择知识点标签', trigger: 'change' }],
-    })
-    
-    // 标签列表计算
+      jobRole: [
+        { required: true, message: "请选择适用岗位", trigger: "change" },
+      ],
+      tags: [
+        { required: true, message: "请选择知识点标签", trigger: "change" },
+      ],
+    });
+
+    // 标签列表
     const tagList = computed(() => {
-      const tags = currentQuestionDetail.value?.tags
-      if (Array.isArray(tags)) return tags
-      if (typeof tags === 'string') return tags.split(',').filter((t) => t.trim())
-      return []
-    })
-    
+      const tags = currentQuestionDetail.value?.tags;
+      if (Array.isArray(tags)) return tags;
+      if (typeof tags === "string")
+        return tags.split(",").filter((t) => t.trim());
+      return [];
+    });
+
+    const loadJobRoleList = async () => {
+      try {
+        const res = await getJobRoleList();
+        console.log("✅ 岗位接口请求成功：", res);
+        jobRoleList.value = res.data || [];
+      } catch (err) {
+        console.error("❌ 岗位接口请求失败：", err);
+        ElMessage.error("岗位加载失败");
+      }
+    };
+
+    const loadTagList = async () => {
+      try {
+        const res = await getTagList();
+        console.log("✅ 标签接口请求成功：", res);
+        tagOptions.value = res.data || [];
+      } catch (err) {
+        console.error("❌ 标签接口请求失败：", err);
+        ElMessage.error("标签加载失败");
+      }
+    };
+
     // 获取速记卡列表
     const loadCardList = async () => {
       try {
-        const response = await getCardList()
-        cardList.value = response.data || []
+        const response = await getCardList();
+        cardList.value = response.data || [];
       } catch (error) {
-        console.error('加载速记卡失败', error)
+        console.error("加载速记卡失败", error);
         // 模拟数据
         cardList.value = [
           {
             id: 1,
-            question: 'Vue 3 的响应式原理是什么？',
-            answer: 'Vue 3 使用 Proxy 代理对象实现响应式，相比 Vue 2 的 Object.defineProperty，可以监听数组变化和对象属性的增删。',
+            question: "Vue 3 的响应式原理是什么？",
+            answer:
+              "Vue 3 使用 Proxy 代理对象实现响应式，相比 Vue 2 的 Object.defineProperty，可以监听数组变化和对象属性的增删。",
             options: [
-              '使用 Object.defineProperty',
-              '使用 Proxy 代理',
-              '使用 Object.observe',
-              '使用 Reflect API'
+              "使用 Object.defineProperty",
+              "使用 Proxy 代理",
+              "使用 Object.observe",
+              "使用 Reflect API",
             ],
             correctOption: 1,
-            type: 'ai'
+            type: "ai",
           },
           {
             id: 2,
-            question: '以下哪个是 CSS 中用于创建弹性布局的属性？',
-            answer: 'display: flex 用于创建弹性盒模型布局，可以让子元素灵活排列。',
+            question: "以下哪个是 CSS 中用于创建弹性布局的属性？",
+            answer:
+              "display: flex 用于创建弹性盒模型布局，可以让子元素灵活排列。",
             options: [
-              'display: block',
-              'display: inline',
-              'display: flex',
-              'display: grid'
+              "display: block",
+              "display: inline",
+              "display: flex",
+              "display: grid",
             ],
             correctOption: 2,
-            type: 'manual'
-          }
-        ]
+            type: "manual",
+          },
+        ];
       }
-    }
-    
+    };
+
     // 加载题目列表
     const loadQuestionList = async () => {
-      loading.value = true
+      loading.value = true;
       try {
-        // 模拟数据
-        questionList.value = [
-          {
-            id: 1,
-            questionContent: 'Vue 3 的响应式原理是什么？',
-            referenceAnswer: 'Vue 3 使用 Proxy 代理对象实现响应式，相比 Vue 2 的 Object.defineProperty，可以监听数组变化和对象属性的增删。',
-            evaluationCriteria: '回答出 Proxy 代理、相比 Vue 2 的优势、响应式原理的核心概念',
-            difficultyLevel: 2,
-            jobRole: '前端开发工程师',
-            tags: ['Vue', '响应式'],
-            source: 0,
-            createTime: new Date().toISOString(),
-            updateTime: new Date().toISOString(),
-            like: 12,
-            collect: 8,
-            isLiked: false,
-            isCollected: false
-          },
-          {
-            id: 2,
-            questionContent: '什么是 RESTful API？',
-            referenceAnswer: 'RESTful API 是一种基于 REST 架构风格的 API 设计规范，使用 HTTP 方法（GET、POST、PUT、DELETE）来操作资源，通过 URI 来标识资源。',
-            evaluationCriteria: '回答出 REST 架构风格、HTTP 方法的使用、资源的标识',
-            difficultyLevel: 1,
-            jobRole: '后端开发工程师',
-            tags: ['API', 'REST'],
-            source: 0,
-            createTime: new Date().toISOString(),
-            updateTime: new Date().toISOString(),
-            like: 8,
-            collect: 5,
-            isLiked: false,
-            isCollected: false
+        const params = {
+          pageNum: pageNum.value,
+          pageSize: pageSize.value,
+          keyword: searchKeyword.value,
+          tag: searchTag.value,
+          jobRole: searchJob.value,
+        };
+        const res = await getQuestionList(params);
+        console.log("✅ 题目列表接口请求成功：", res);
+
+        // 统一格式化 tags 为数组
+        questionList.value = (res.data.records || []).map((item) => {
+          let tags = [];
+          if (Array.isArray(item.tags)) {
+            tags = item.tags;
+          } else if (typeof item.tags === "string") {
+            tags = item.tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter((t) => t);
           }
-        ]
-        total.value = 2
+          return { ...item, tags };
+        });
+
+        total.value = res.data.total || 0;
       } catch (error) {
-        console.error('加载题目列表失败：', error)
-        ElMessage.error('加载失败')
+        console.error("❌ 题目列表接口请求失败：", error);
+        ElMessage.error("加载失败");
       } finally {
-        loading.value = false
+        loading.value = false;
       }
-    }
-    
-    // 提交题目
+    };
+
+    // 添加题目
     const handleAddQuestion = async () => {
+      if (!questionFormRef.value) return;
+      addLoading.value = true;
       try {
-        // 模拟提交
-        ElMessage.success('题目添加成功！')
-        // 重置表单
-        if (questionFormRef.value) {
-          questionFormRef.value.resetFields()
-        }
-        // 刷新题目列表
-        loadQuestionList()
+        await questionFormRef.value.validate();
+        const res = await addQuestion(questionForm.value);
+        console.log("✅ 添加题目接口成功：", res);
+        ElMessage.success("题目添加成功！");
+        questionFormRef.value.resetFields();
+        loadQuestionList();
       } catch (error) {
-        console.error('提交失败:', error)
-        ElMessage.error('网络异常，请稍后重试')
+        console.error("❌ 添加题目接口失败：", error);
+        ElMessage.error("提交失败：" + (error.message || "请检查表单"));
+      } finally {
+        addLoading.value = false;
       }
-    }
-    
+    };
+
     // 搜索题目
     const handleSearch = () => {
-      pageNum.value = 1
-      loadQuestionList()
-    }
-    
+      pageNum.value = 1;
+      loadQuestionList();
+    };
+
     // 重置搜索
     const resetSearch = () => {
-      searchKeyword.value = ''
-      searchTag.value = ''
-      searchJob.value = ''
-      pageNum.value = 1
-      loadQuestionList()
-    }
-    
+      searchKeyword.value = "";
+      searchTag.value = "";
+      searchJob.value = "";
+      pageNum.value = 1;
+      loadQuestionList();
+    };
+
     // 分页处理
     const handleSizeChange = (val) => {
-      pageSize.value = val
-      loadQuestionList()
-    }
-    
+      pageSize.value = val;
+      loadQuestionList();
+    };
+
     const handleCurrentChange = (val) => {
-      pageNum.value = val
-      loadQuestionList()
-    }
-    
+      pageNum.value = val;
+      loadQuestionList();
+    };
+
     // 收藏题目
     const handleCollect = async (id) => {
       try {
-        const question = questionList.value.find((item) => item.id === id)
-        if (question) {
-          question.isCollected = !question.isCollected
-          question.collect = question.isCollected ? question.collect + 1 : question.collect - 1
-          const tip = question.isCollected ? '收藏成功' : '取消收藏成功'
-          ElMessage.success(tip)
+        const res = await collectQuestion(id);
+        console.log(`✅ 收藏接口请求成功 (ID:${id})：`, res);
+        const item = questionList.value.find((x) => x.id === id);
+        if (item) {
+          item.isCollected = !item.isCollected;
+          item.collect += item.isCollected ? 1 : -1;
+          ElMessage.success(item.isCollected ? "收藏成功" : "取消收藏");
         }
-      } catch (error) {
-        ElMessage.error('收藏操作失败：' + error.message)
+      } catch (e) {
+        console.error(`❌ 收藏接口失败 (ID:${id})：`, e);
+        ElMessage.error("操作失败");
       }
-    }
-    
+    };
+
     // 点赞题目
     const handleLike = async (id) => {
       try {
-        const question = questionList.value.find((q) => q.id === id)
-        if (question) {
-          question.isLiked = !question.isLiked
-          question.like += question.isLiked ? 1 : -1
-          const tip = question.isLiked ? '点赞成功' : '取消点赞成功'
-          ElMessage.success(tip)
+        const res = await likeQuestion(id);
+        console.log(`✅ 点赞接口请求成功 (ID:${id})：`, res);
+        const item = questionList.value.find((x) => x.id === id);
+        if (item) {
+          item.isLiked = !item.isLiked;
+          item.like += item.isLiked ? 1 : -1;
+          ElMessage.success(item.isLiked ? "点赞成功" : "取消点赞");
         }
-      } catch {
-        ElMessage.error('操作失败')
+      } catch (e) {
+        console.error(`❌ 点赞接口失败 (ID:${id})：`, e);
+        ElMessage.error("操作失败");
       }
-    }
-    
+    };
+
     // 查看相似题目
     const handleSimilar = async (id) => {
       try {
-        // 模拟相似题目数据
-        similarQuestionList.value = [
-          {
-            id: 3,
-            questionContent: 'Vue 2 和 Vue 3 的响应式原理有什么区别？',
-            difficultyLevel: 2,
-            jobRole: '前端开发工程师',
-            tags: ['Vue', '响应式']
-          }
-        ]
-        similarDialogVisible.value = true
-      } catch (error) {
-        console.error('相似题搜索失败：', error)
-        ElMessage.error('相似题搜索失败，请重试')
+        const res = await getSimilarQuestion(id);
+        console.log(`✅ 相似题接口成功 (ID:${id})：`, res);
+        similarQuestionList.value = res.data || [];
+        similarDialogVisible.value = true;
+      } catch (e) {
+        console.error(`❌ 相似题接口失败 (ID:${id})：`, e);
+        ElMessage.error("获取相似题失败");
       }
-    }
-    
+    };
+
     // 查看题目详情
     const handleViewDetail = async (id) => {
       try {
-        const question = questionList.value.find((q) => q.id === id)
+        const question = questionList.value.find((q) => q.id === id);
         if (question) {
-          currentQuestionDetail.value = { ...question }
-          detailDialogVisible.value = true
+          currentQuestionDetail.value = { ...question };
+          detailDialogVisible.value = true;
         } else {
-          ElMessage.warning('未找到该题目')
+          ElMessage.warning("未找到该题目");
         }
       } catch (error) {
-        console.error('加载题目详情失败:', error)
-        ElMessage.error('加载失败，请稍后重试')
+        console.error("加载题目详情失败:", error);
+        ElMessage.error("加载失败，请稍后重试");
       }
-    }
-    
+    };
+
     // 格式化时间
     const formatTime = (timestamp) => {
-      if (!timestamp) return ''
-      const date = new Date(timestamp)
+      if (!timestamp) return "";
+      const date = new Date(timestamp);
       return (
         date.getFullYear() +
         "-" +
@@ -777,38 +818,40 @@ export default {
         String(date.getMinutes()).padStart(2, "0") +
         ":" +
         String(date.getSeconds()).padStart(2, "0")
-      )
-    }
-    
+      );
+    };
+
     const handleCardCreated = (newCard) => {
-      cardList.value.unshift(newCard)
-      ElMessage.success('速记卡创建成功！')
-    }
-    
+      cardList.value.unshift(newCard);
+      ElMessage.success("速记卡创建成功！");
+    };
+
     const handlePracticeComplete = (result) => {
-      console.log('练习完成', result)
-      ElMessage.success(`练习完成！正确率：${result.percentage}%`)
-    }
-    
+      console.log("练习完成", result);
+      ElMessage.success(`练习完成！正确率：${result.percentage}%`);
+    };
+
     const clearSearch = () => {
-      searchKeyword.value = ''
-      router.push('/user-question')
-    }
-    
+      searchKeyword.value = "";
+      router.push("/user-question");
+    };
+
     const handleLogout = () => {
-      localStorage.removeItem('userToken')
-      router.push('/login')
-    }
-    
+      localStorage.removeItem("userToken");
+      router.push("/login");
+    };
+
     onMounted(() => {
       if (route.query.keyword) {
-        searchKeyword.value = route.query.keyword
-        activeTab.value = 'knowledge'
+        searchKeyword.value = route.query.keyword;
+        activeTab.value = "knowledge";
       }
-      loadCardList()
-      loadQuestionList()
-    })
-    
+      loadCardList();
+      loadQuestionList();
+      loadJobRoleList();
+      loadTagList();
+    });
+
     return {
       activeTab,
       currentMode,
@@ -831,6 +874,7 @@ export default {
       currentQuestionDetail,
       similarQuestionList,
       tagList,
+      jobRoleList,
       handleCardCreated,
       handlePracticeComplete,
       handleAddQuestion,
@@ -844,10 +888,11 @@ export default {
       handleViewDetail,
       formatTime,
       clearSearch,
-      handleLogout
-    }
-  }
-}
+      handleLogout,
+      loadCardList,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -863,7 +908,7 @@ export default {
   padding: 0 50px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
@@ -907,7 +952,7 @@ export default {
 
 .logout-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .content-wrapper {
@@ -959,7 +1004,7 @@ export default {
 }
 
 .tab-item.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
@@ -977,7 +1022,7 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .query-bar {
@@ -1044,7 +1089,7 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .sub-tabs {
@@ -1081,41 +1126,41 @@ export default {
   .navbar {
     padding: 0 20px;
   }
-  
+
   .logo {
     font-size: 18px;
   }
-  
+
   .nav-links {
     gap: 15px;
   }
-  
+
   .nav-link {
     font-size: 14px;
   }
-  
+
   .content-wrapper {
     padding: 20px 15px;
   }
-  
+
   .tab-item {
     padding: 10px 16px;
     font-size: 16px;
   }
-  
+
   .query-bar {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .query-bar > * {
     width: 100% !important;
   }
-  
+
   .action-buttons {
     flex-wrap: wrap;
   }
-  
+
   .flashcard-content {
     padding: 16px;
   }

@@ -40,7 +40,9 @@ const createQuestion = (item, id) => ({
   questionContent: item.questionContent?.trim() || "",
   referenceAnswer: item.referenceAnswer?.trim() || "",
   evaluationCriteria: item.evaluationCriteria?.trim() || "",
-  tags: item.tags?.trim() || "",
+  tags: Array.isArray(item.tags)
+    ? item.tags.join(",").trim()
+    : item.tags?.toString().trim() || "",
   source: Number(item.source) || 0,
 });
 
