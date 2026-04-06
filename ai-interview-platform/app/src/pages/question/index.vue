@@ -1,6 +1,68 @@
 <template>
   <div class="question-manage">
     <el-tabs v-model="activeTab" type="border-card">
+      <!-- AI 生成题目 -->
+      <el-tab-pane label="AI 生成题目" name="aiGenerate">
+        <el-form
+          :model="aiForm"
+          label-width="100px"
+          ref="aiFormRef"
+          :rules="aiRules"
+        >
+          <el-form-item label="目标岗位" prop="jobRole" required>
+            <el-input v-model="aiForm.jobRole" placeholder="如：Java后端开发" />
+          </el-form-item>
+          <el-form-item label="难度等级" prop="difficultyLevel" required>
+            <el-radio-group v-model="aiForm.difficultyLevel">
+              <el-radio :value="1">简单</el-radio>
+              <el-radio :value="2">中等</el-radio>
+              <el-radio :value="3">困难</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="生成数量" prop="count">
+            <el-slider v-model="aiForm.count" :min="1" :max="5" show-input />
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              type="primary"
+              @click="handleAiGenerate"
+              :loading="aiLoading"
+            >
+              生成题目
+            </el-button>
+          </el-form-item>
+        </el-form>
+
+        <!-- 预览区域 -->
+        <div v-if="aiGeneratedList.length" class="ai-preview">
+          <h3>AI 生成结果（共 {{ aiGeneratedList.length }} 道）</h3>
+          <el-table :data="aiGeneratedList" border stripe>
+            <el-table-column
+              prop="questionContent"
+              label="题目内容"
+              min-width="300"
+            />
+            <el-table-column
+              prop="referenceAnswer"
+              label="参考答案"
+              min-width="200"
+            />
+            <el-table-column
+              prop="evaluationCriteria"
+              label="评分准则"
+              min-width="180"
+            />
+            <el-table-column label="操作" width="100">
+              <template #default="{ row, $index }">
+                <el-button size="small" @click="editAiQuestion(row, $index)"
+                  >编辑</el-button
+                >
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </el-tab-pane>
+
       <!-- 单题新增 -->
       <el-tab-pane label="增加题目" name="add">
         <el-form :model="form" label-width="8%" :rules="rules" ref="formRef">
@@ -276,6 +338,7 @@ import {
   batchApprove,
   vectorImport,
   deleteQuestion,
+  aiGenerateQuestion,
 } from "@/api/request";
 
 // 基础变量
@@ -320,6 +383,91 @@ const formatStatus = (row, column) => {
   return row[prop] || "-";
 };
 const formatTime = (row) => formatters.time(row.createTime);
+
+const aiFormRef = ref(null);
+const aiRules = {
+  // 加校验
+  jobRole: [{ required: true, message: "请输入目标岗位", trigger: "blur" }],
+  difficultyLevel: [
+    { required: true, message: "请选择难度", trigger: "change" },
+  ],
+  count: [{ required: true, message: "请选择生成数量", trigger: "change" }],
+};
+
+const aiForm = reactive({
+  jobRole: "",
+  difficultyLevel: 2,
+  count: 3,
+});
+const aiLoading = ref(false);
+const aiGeneratedList = ref([]); // 存放 AI 生成的题目（未提交）
+
+// AI 生成
+const handleAiGenerate = async () => {
+  if (!aiForm.jobRole.trim()) {
+    ElMessage.warning("请输入目标岗位");
+    return;
+  }
+  console.log("传递的参数：", aiForm); // 打印入参
+
+  aiLoading.value = true;
+  try {
+    const res = await aiGenerateQuestion({
+      jobRole: aiForm.jobRole,
+      difficultyLevel: aiForm.difficultyLevel,
+      count: aiForm.count,
+    });
+    console.log("✅ AI 接口请求成功！", res);
+    console.log("返回数据：", res.data);
+
+    aiGeneratedList.value = res.data.map((item) => ({
+      ...item,
+      // 确保字段与表单一致
+      tags: item.tags || "",
+      evaluationCriteria: item.evaluationCriteria || "",
+      source: item.source ?? 1,
+    }));
+    console.log("最终渲染列表：", aiGeneratedList.value);
+
+    ElMessage.success(`成功生成 ${res.data.length} 道题目`);
+  } catch (err) {
+    console.error("❌ AI 接口请求失败！", err);
+    console.error("错误详情：", err.message || err);
+
+    ElMessage.error(err.message || "AI 生成失败");
+  } finally {
+    aiLoading.value = false;
+  }
+};
+
+// 编辑某道 AI 题目（弹出对话框或直接 inline 编辑）
+const editAiQuestion = (row, index) => {
+  ElMessageBox.prompt("请修改题目内容", "编辑题目", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    inputValue: row.questionContent,
+  })
+    .then(({ value }) => {
+      if (value.trim()) {
+        aiGeneratedList.value[index].questionContent = value.trim();
+      }
+    })
+    .catch(() => {});
+};
+
+// 一键提交所有 AI 题目
+const submitAiQuestions = async () => {
+  if (!aiGeneratedList.value.length) return;
+  try {
+    const res = await batchAddQuestion(aiGeneratedList.value);
+    ElMessage.success(res.message);
+    aiGeneratedList.value = [];
+    loadAllQuestions(); // 刷新未审核列表
+    activeTab.value = "unreviewed";
+  } catch (err) {
+    ElMessage.error(err.message || "提交失败");
+  }
+};
 
 // 批量表单操作
 const addBatchForm = () =>

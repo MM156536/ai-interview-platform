@@ -42,6 +42,13 @@ request.interceptors.response.use(
   },
 );
 
+export const aiGenerateQuestion = (params) => {
+  return request({
+    url: "/admin/question/aicreate",
+    method: "post",
+    data: params,
+  });
+};
 export const addQuestion = (data) => request.post(`/admin/question/add`, data);
 export const batchAddQuestion = (data) =>
   request.post(`/admin/question/addBatch`, { question: data });

@@ -46,6 +46,66 @@ const createQuestion = (item, id) => ({
 
 const baseUrl = "http://127.0.0.1:4523/m1/7900134-7650835-default";
 
+Mock.mock(`${baseUrl}/admin/question/aicreate`, "post", (option) => {
+  const params = JSON.parse(option.body || "{}");
+
+  const jobRole = params.jobRole || "通用岗位";
+  const difficulty = parseInt(params.difficultyLevel || 2);
+  let count = parseInt(params.count || 1);
+
+  // 安全限制
+  count = Math.max(1, Math.min(5, count));
+
+  // 题库模板
+  const questionBank = {
+    前端开发: [
+      "Vue3 Composition API 与 Options API 的区别",
+      "前端性能优化的常见方案",
+      "虚拟 DOM 的原理与作用",
+      "Webpack 构建流程与优化",
+      "前端如何防范 XSS 攻击",
+    ],
+    后端开发: [
+      "MySQL 索引失效场景",
+      "高并发秒杀系统设计",
+      "Spring Boot 自动配置原理",
+      "Redis 三大问题及解决方案",
+      "分布式事务理解",
+    ],
+  };
+
+  // 随机取不重复题目
+  const list =
+    questionBank[jobRole] ||
+    Array.from({ length: 5 }, (_, i) => `【${jobRole}】AI 生成题目 ${i + 1}`);
+  const selected = [...Array(list.length).keys()]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, count);
+
+  // 返回数据
+  return {
+    code: 200,
+    message: `成功生成 ${count} 道 AI 题目`,
+    data: selected.map((idx) => ({
+      id: null,
+      jobRole,
+      difficultyLevel: difficulty,
+      questionContent: list[idx],
+      referenceAnswer: "请根据岗位与难度提供专业参考答案",
+      evaluationCriteria: "回答逻辑清晰、要点完整",
+      tags:
+        jobRole === "前端开发"
+          ? "Vue,React,性能优化"
+          : jobRole === "后端开发"
+          ? "MySQL,Redis,Spring"
+          : "AI生成",
+      source: 1,
+      status: "待提交",
+      createTime: new Date().toLocaleString(),
+    })),
+  };
+});
+
 Mock.mock(`${baseUrl}/admin/question/delete`, "post", ({ body }) => {
   const { id } = JSON.parse(body);
   data.unreviewedList = data.unreviewedList.filter((item) => item.id !== id);
